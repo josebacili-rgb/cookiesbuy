@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#4E2A5E">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Doce Controle">
+<meta name="description" content="Controle de vendas diárias de doces: estoque, preços e lucro.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8D%AC%3C/text%3E%3C/svg%3E">
+<title>Doce Controle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FBF5E8;
+    --paper-deep:#F2E7CE;
+    --white:#FFFDF8;
+    --ink:#2C2117;
+    --ink-soft:#7A6C59;
+    --ink-faint:#AFA28D;
+    --rule:#E3D6BA;
+    --grape:#4E2A5E;
+    --grape-light:#6C3D80;
+    --candy-red:#D6294F;
+    --candy-red-dark:#AD1F3F;
+    --caramel:#DE9A2E;
+    --caramel-bg:#FBEBCB;
+    --caramel-ink:#8A5C14;
+    --mint:#2E8B5D;
+    --mint-bg:#E1F3E8;
+    --brick:#B3402E;
+    --brick-bg:#FBE4DE;
+    --shadow:0 2px 8px rgba(44,33,23,.08),0 1px 2px rgba(44,33,23,.06);
+    --shadow-lift:0 8px 28px rgba(44,33,23,.18);
+    --radius:14px;
+    --radius-sm:10px;
+    --font-display:'Baloo 2',ui-rounded,'SF Pro Rounded',system-ui,sans-serif;
+    --font-body:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,system-ui,sans-serif;
+  }
+
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper-deep);
+    color:var(--ink);
+    font-family:var(--font-body);
+    font-size:15px;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  button,input,select{font-family:inherit;}
+  h1,h2,h3{margin:0;}
+  p{margin:0;}
+
+  #app{
+    max-width:480px;
+    margin:0 auto;
+    min-height:100vh;
+    background:var(--paper);
+    display:flex;
+    flex-direction:column;
+    position:relative;
+    box-shadow:var(--shadow-lift);
+  }
+
+  /* Header */
+  header.app-header{
+    background:var(--grape);
+    color:var(--white);
+    padding:calc(14px + env(safe-area-inset-top)) 20px 14px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    position:sticky;
+    top:0;
+    z-index:20;
+  }
+  header.app-header h1{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:19px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .header-subtitle{
+    font-size:12px;
+    color:rgba(255,253,248,.78);
+    font-weight:600;
+    margin-top:2px;
+  }
+
+  /* Main */
+  main.app-main{
+    flex:1;
+    padding:18px 16px calc(96px + env(safe-area-inset-bottom));
+    overflow-y:auto;
+  }
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+
+  .section-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:14px;
+  }
+  .section-header h2{
+    font-family:var(--font-display);
+    font-size:20px;
+    font-weight:700;
+  }
+  .subtitulo{
+    font-family:var(--font-display);
+    font-size:14px;
+    font-weight:700;
+    color:var(--ink-soft);
+    margin:18px 0 10px;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+  }
+
+  /* Buttons */
+  .btn-small{
+    background:var(--grape);
+    color:var(--white);
+    border:none;
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:13px;
+    padding:9px 14px;
+    border-radius:20px;
+  }
+  .btn-primary{
+    background:var(--candy-red);
+    color:var(--white);
+    border:none;
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:16px;
+    padding:14px 20px;
+    border-radius:var(--radius-sm);
+    width:100%;
+    box-shadow:0 3px 0 var(--candy-red-dark);
+    transition:transform .08s ease,box-shadow .08s ease;
+    margin-top:6px;
+  }
+  .btn-primary:active{transform:translateY(3px);box-shadow:0 0 0 var(--candy-red-dark);}
+  .btn-secondary{
+    background:var(--white);
+    color:var(--grape);
+    border:1.5px solid var(--rule);
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:14px;
+    padding:12px 16px;
+    border-radius:var(--radius-sm);
+    width:100%;
+    margin-bottom:8px;
+  }
+  .btn-text{
+    background:none;
+    border:none;
+    color:var(--ink-soft);
+    font-weight:600;
+    font-size:13px;
+    padding:14px 4px;
+    text-decoration:underline;
+    text-underline-offset:3px;
+  }
+  .btn-chip{
+    background:var(--paper-deep);
+    color:var(--ink);
+    border:1px solid var(--rule);
+    font-weight:600;
+    font-size:12.5px;
+    padding:7px 11px;
+    border-radius:20px;
+  }
+  .btn-chip.danger{color:var(--brick);}
+  .btn-icon{
+    background:none;
+    border:none;
+    font-size:17px;
+    line-height:1;
+    padding:6px;
+    color:var(--ink-soft);
+  }
+
+  /* Empty state */
+  .empty-state{
+    text-align:center;
+    padding:40px 20px;
+    color:var(--ink-soft);
+  }
+  .empty-emoji{font-size:40px;margin-bottom:10px;}
+  .empty-state p{margin-bottom:16px;font-size:14px;}
+
+  /* Product cards */
+  .card{
+    background:var(--white);
+    border:1px solid var(--rule);
+    border-radius:var(--radius);
+    padding:14px 16px;
+    margin-bottom:12px;
+    box-shadow:var(--shadow);
+  }
+  .produto-top{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+  .avatar{
+    width:40px;height:40px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-display);font-weight:800;font-size:16px;
+    color:var(--ink);flex-shrink:0;
+  }
+  .produto-nome{font-weight:700;font-size:15.5px;}
+  .produto-estoque{font-size:12.5px;color:var(--ink-soft);margin-top:1px;}
+  .produto-estoque.baixo{color:var(--brick);font-weight:700;}
+  .produto-precos{
+    display:flex;flex-wrap:wrap;gap:4px 14px;
+    font-size:12.5px;color:var(--ink-soft);
+    padding:9px 0;border-top:1px dashed var(--rule);border-bottom:1px dashed var(--rule);
+    margin-bottom:10px;
+  }
+  .produto-precos b{color:var(--ink);font-variant-numeric:tabular-nums;}
+  .produto-precos .margem{color:var(--mint);font-weight:700;}
+  .produto-acoes{display:flex;gap:8px;flex-wrap:wrap;}
+
+  /* Vender tab */
+  .produto-info-box{
+    display:none;
+    align-items:center;gap:12px;
+    background:var(--paper-deep);
+    border-radius:var(--radius-sm);
+    padding:12px 14px;
+    margin-bottom:16px;
+  }
+  .field{margin-bottom:16px;}
+  .field label{
+    display:block;font-size:12.5px;font-weight:700;color:var(--ink-soft);
+    margin-bottom:6px;text-transform:uppercase;letter-spacing:.02em;
+  }
+  .field input[type="text"],.field input[type="number"],.field select,.field input[type="date"]{
+    width:100%;padding:12px 14px;
+    border:1.5px solid var(--rule);border-radius:var(--radius-sm);
+    background:var(--white);color:var(--ink);font-size:16px;
+    appearance:none;-webkit-appearance:none;
+  }
+  .field select{
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9'%3E%3Cpath d='M1 1l6 6 6-6' stroke='%237A6C59' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 14px center;padding-right:34px;
+  }
+  .field input:focus,.field select:focus{
+    outline:none;border-color:var(--grape);box-shadow:0 0 0 3px rgba(78,42,94,.14);
+  }
+  .stepper{display:flex;align-items:center;gap:10px;}
+  .stepper button{
+    width:46px;height:46px;border-radius:50%;flex-shrink:0;
+    border:1.5px solid var(--rule);background:var(--white);
+    font-size:21px;font-weight:700;color:var(--grape);
+  }
+  .stepper button:active{background:var(--paper-deep);}
+  .stepper input{
+    flex:1;text-align:center;font-size:19px;font-weight:700;
+    font-variant-numeric:tabular-nums;
+    border:1.5px solid var(--rule);border-radius:var(--radius-sm);
+    padding:10px;background:var(--white);color:var(--ink);
+  }
+  .valor-sugerido{
+    font-size:17px;font-weight:700;color:var(--ink-soft);
+    font-variant-numeric:tabular-nums;
+    padding:10px 14px;background:var(--paper-deep);border-radius:var(--radius-sm);
+  }
+  .input-currency{position:relative;}
+  .input-currency .prefix{
+    position:absolute;left:14px;top:50%;transform:translateY(-50%);
+    color:var(--ink-soft);font-weight:700;pointer-events:none;
+  }
+  .input-currency input{padding-left:38px !important;font-variant-numeric:tabular-nums;}
+
+  .badge{
+    display:inline-flex;align-items:center;gap:4px;
+    font-size:11.5px;font-weight:700;
+    padding:4px 10px;border-radius:20px;
+    font-family:var(--font-display);
+    margin-top:8px;
+  }
+  .badge:empty{display:none;margin-top:0;}
+  .badge-padrao{background:var(--paper-deep);color:var(--ink-soft);}
+  .badge-promo{background:var(--caramel-bg);color:var(--caramel-ink);}
+  .badge-acima{background:#F2E1F5;color:var(--grape);}
+
+  .lucro-preview-box{
+    display:flex;align-items:center;justify-content:space-between;
+    background:var(--mint-bg);border-radius:var(--radius-sm);
+    padding:14px 16px;margin:18px 0 6px;
+    font-family:var(--font-display);font-weight:700;font-size:14px;color:var(--mint);
+  }
+  .lucro-valor{font-size:19px;font-variant-numeric:tabular-nums;}
+  .lucro-valor.positivo{color:var(--mint);}
+  .lucro-valor.negativo{color:var(--brick);}
+
+  /* Resumo tab */
+  .filtro-data-row{display:flex;gap:10px;margin-bottom:6px;}
+  .filtro-data-row input{flex:1;}
+  .filtro-data-row .btn-small{flex-shrink:0;}
+  .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .stat-card{
+    background:var(--white);border:1px solid var(--rule);border-radius:var(--radius-sm);
+    padding:12px 14px;
+  }
+  .stat-card .label{font-size:10.5px;color:var(--ink-soft);font-weight:700;text-transform:uppercase;letter-spacing:.03em;}
+  .stat-card .value{
+    font-size:19px;font-weight:800;font-family:var(--font-display);
+    font-variant-numeric:tabular-nums;margin-top:3px;color:var(--ink);
+  }
+  .stat-card.mint .value{color:var(--mint);}
+  .stat-card .value.valor-negativo{color:var(--brick);}
+
+  .checkbox-row{
+    display:flex;align-items:center;gap:9px;
+    font-size:13px;color:var(--ink-soft);font-weight:600;
+    margin:18px 0 14px;
+  }
+  .checkbox-row input{width:18px;height:18px;flex-shrink:0;accent-color:var(--grape);}
+
+  /* Tickets (sale history) */
+  .ticket{
+    background:var(--white);
+    border:1px solid var(--rule);
+    border-radius:var(--radius);
+    margin-bottom:14px;
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+  .ticket-main{padding:13px 16px 11px;}
+  .ticket-row-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;}
+  .ticket-produto{font-weight:700;font-size:14.5px;}
+  .ticket-time{font-size:11.5px;color:var(--ink-faint);font-weight:600;white-space:nowrap;}
+  .ticket-row-detail{font-size:12.5px;color:var(--ink-soft);margin-top:2px;font-variant-numeric:tabular-nums;}
+  .ticket-perf{
+    height:11px;
+    background:radial-gradient(circle,var(--paper) 3px,transparent 3.5px) repeat-x;
+    background-size:14px 100%;background-position:2px center;
+  }
+  .ticket-footer{
+    display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+    padding:9px 16px 11px;
+  }
+  .ticket-footer .lucro-valor{font-size:14.5px;font-weight:700;margin-right:auto;font-family:var(--font-display);}
+  .ticket-footer .badge{margin-top:0;}
+  .ticket-footer .btn-icon{margin-left:auto;padding:2px 4px;}
+  .ticket-footer .lucro-valor ~ .badge{margin-left:0;}
+
+  /* Bottom nav */
+  nav.bottom-nav{
+    position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+    width:100%;max-width:480px;
+    background:var(--white);
+    border-top:1px solid var(--rule);
+    display:flex;
+    padding-bottom:env(safe-area-inset-bottom);
+    z-index:30;
+  }
+  .nav-btn{
+    flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+    padding:10px 4px 8px;background:none;border:none;
+    color:var(--ink-faint);
+  }
+  .nav-btn span{font-family:var(--font-display);font-size:11px;font-weight:700;}
+  .nav-btn svg{width:22px;height:22px;}
+  .nav-btn.active{color:var(--candy-red);}
+
+  /* Modal */
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(44,33,23,.5);
+    display:flex;align-items:flex-end;justify-content:center;
+    z-index:100;opacity:0;pointer-events:none;transition:opacity .2s ease;
+  }
+  .modal-overlay.open{opacity:1;pointer-events:auto;}
+  .modal-sheet{
+    background:var(--paper);width:100%;max-width:480px;
+    border-radius:20px 20px 0 0;
+    padding:20px 20px calc(24px + env(safe-area-inset-bottom));
+    transform:translateY(24px);
+    transition:transform .25s cubic-bezier(.2,.8,.2,1);
+    max-height:85vh;overflow-y:auto;
+  }
+  .modal-overlay.open .modal-sheet{transform:translateY(0);}
+  .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+  .modal-header h3{font-family:var(--font-display);font-size:18px;font-weight:700;}
+  .modal-produto-nome{font-weight:700;color:var(--grape);margin-bottom:14px;font-size:15px;}
+  .modal-acoes{display:flex;gap:10px;margin-top:6px;}
+  .modal-acoes .btn-secondary{margin-bottom:0;}
+
+  /* Toast */
+  .toast{
+    position:fixed;left:50%;bottom:96px;
+    transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:var(--white);
+    padding:12px 22px;border-radius:30px;font-weight:600;font-size:13.5px;
+    box-shadow:var(--shadow-lift);
+    opacity:0;transition:all .25s ease;z-index:200;pointer-events:none;
+    max-width:calc(100% - 48px);text-align:center;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  #painel-backup{margin-top:4px;}
+
+  @media (prefers-reduced-motion:reduce){
+    *{transition-duration:.01ms !important;animation-duration:.01ms !important;}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header class="app-header">
+    <div>
+      <h1>🍬 Doce Controle</h1>
+      <div class="header-subtitle" id="header-lucro-hoje">Lucro hoje: R$ 0,00</div>
+    </div>
+  </header>
+
+  <main class="app-main">
+
+    <!-- TAB ESTOQUE -->
+    <section id="tab-estoque" class="tab-panel active">
+      <div class="section-header">
+        <h2>Meus Doces</h2>
+        <button class="btn-small" id="btn-novo-produto" type="button">+ Novo</button>
+      </div>
+      <div id="lista-produtos"></div>
+    </section>
+
+    <!-- TAB VENDER -->
+    <section id="tab-vender" class="tab-panel">
+      <div class="section-header"><h2>Registrar Venda</h2></div>
+
+      <div id="vender-vazio" class="empty-state" style="display:none;">
+        <div class="empty-emoji">📦</div>
+        <p id="vender-vazio-texto">Cadastre seus doces antes de registrar vendas.</p>
+        <button class="btn-primary" type="button" onclick="irPara('estoque'); setTimeout(function(){abrirModalProduto();},300);">Ir para Estoque</button>
+      </div>
+
+      <div id="vender-form">
+        <div class="field">
+          <label for="select-produto-venda">Doce</label>
+          <select id="select-produto-venda"></select>
+        </div>
+
+        <div id="venda-produto-info" class="produto-info-box"></div>
+
+        <div class="field">
+          <label>Quantidade</label>
+          <div class="stepper">
+            <button type="button" id="btn-qtd-menos" aria-label="Diminuir quantidade">−</button>
+            <input type="number" id="input-qtd-venda" inputmode="numeric" min="1" value="1">
+            <button type="button" id="btn-qtd-mais" aria-label="Aumentar quantidade">+</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Valor sugerido (tabela)</label>
+          <div class="valor-sugerido" id="valor-sugerido-display">R$ 0,00</div>
+        </div>
+
+        <div class="field">
+          <label for="input-valor-cobrado">Valor cobrado nesta venda</label>
+          <div class="input-currency">
+            <span class="prefix">R$</span>
+            <input type="text" id="input-valor-cobrado" inputmode="decimal" placeholder="0,00">
+          </div>
+          <span class="badge" id="venda-badge"></span>
+        </div>
+
+        <div class="lucro-preview-box">
+          <span>Lucro desta venda</span>
+          <span id="venda-lucro-preview" class="lucro-valor">R$ 0,00</span>
+        </div>
+
+        <button class="btn-primary" id="btn-confirmar-venda" type="button">Confirmar Venda</button>
+      </div>
+    </section>
+
+    <!-- TAB RESUMO -->
+    <section id="tab-resumo" class="tab-panel">
+      <div class="section-header"><h2>Resumo</h2></div>
+
+      <div class="filtro-data-row">
+        <input type="date" id="input-data-filtro">
+        <button class="btn-small" id="btn-hoje" type="button">Hoje</button>
+      </div>
+
+      <h3 class="subtitulo" id="resumo-label-dia">Hoje</h3>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="label">Vendas</div><div class="value" id="stat-vendas-dia">0</div></div>
+        <div class="stat-card"><div class="label">Faturamento</div><div class="value" id="stat-faturamento-dia">R$ 0,00</div></div>
+        <div class="stat-card"><div class="label">Custo do vendido</div><div class="value" id="stat-custo-dia">R$ 0,00</div></div>
+        <div class="stat-card mint"><div class="label">Lucro</div><div class="value" id="stat-lucro-dia">R$ 0,00</div></div>
+      </div>
+
+      <h3 class="subtitulo">Totais gerais (desde o início)</h3>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="label">Investido em estoque</div><div class="value" id="stat-investido">R$ 0,00</div></div>
+        <div class="stat-card"><div class="label">Estoque atual (custo)</div><div class="value" id="stat-estoque-valor">R$ 0,00</div></div>
+        <div class="stat-card"><div class="label">Faturamento total</div><div class="value" id="stat-faturamento-total">R$ 0,00</div></div>
+        <div class="stat-card mint"><div class="label">Lucro total</div><div class="value" id="stat-lucro-total">R$ 0,00</div></div>
+      </div>
+
+      <label class="checkbox-row">
+        <input type="checkbox" id="check-mostrar-todas">
+        <span>Mostrar vendas de todas as datas na lista abaixo</span>
+      </label>
+
+      <div id="lista-vendas"></div>
+
+      <button class="btn-text" id="btn-toggle-backup" type="button">💾 Backup dos dados (exportar / importar)</button>
+      <div id="painel-backup" style="display:none;">
+        <button class="btn-secondary" id="btn-exportar" type="button">Exportar backup (JSON)</button>
+        <label class="btn-secondary" style="text-align:center;display:block;cursor:pointer;">
+          Importar backup
+          <input type="file" id="input-importar" accept="application/json" style="display:none;">
+        </label>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-tab="estoque" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+      <span>Estoque</span>
+    </button>
+    <button class="nav-btn" data-tab="vender" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41L13.42 20.58a2 2 0 0 1-2.83 0L2.59 12.58a2 2 0 0 1 0-2.83L9.76 2.58A2 2 0 0 1 11.17 2H18a2 2 0 0 1 2 2v6.83a2 2 0 0 1-.59 1.41z"/><circle cx="7.5" cy="7.5" r="1.2" fill="currentColor" stroke="none"/></svg>
+      <span>Vender</span>
+    </button>
+    <button class="nav-btn" data-tab="resumo" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <span>Resumo</span>
+    </button>
+  </nav>
+
+  <!-- MODAL PRODUTO -->
+  <div class="modal-overlay" id="modal-produto">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <h3 id="modal-produto-titulo">Novo Doce</h3>
+        <button class="btn-icon" id="btn-fechar-modal-produto" type="button" aria-label="Fechar">✕</button>
+      </div>
+      <div class="field">
+        <label for="input-nome">Nome do doce</label>
+        <input type="text" id="input-nome" placeholder="Ex: Bala de Goma">
+      </div>
+      <div class="field">
+        <label for="input-custo">Preço de custo (por unidade)</label>
+        <div class="input-currency"><span class="prefix">R$</span><input type="text" id="input-custo" inputmode="decimal" placeholder="0,00"></div>
+      </div>
+      <div class="field">
+        <label for="input-venda">Preço de venda (por unidade)</label>
+        <div class="input-currency"><span class="prefix">R$</span><input type="text" id="input-venda" inputmode="decimal" placeholder="0,00"></div>
+      </div>
+      <div class="field" id="campo-estoque-inicial">
+        <label for="input-estoque-inicial">Quantidade inicial em estoque</label>
+        <input type="number" id="input-estoque-inicial" inputmode="numeric" min="0" placeholder="0">
+      </div>
+      <div class="field" id="campo-estoque-atual" style="display:none;">
+        <label for="input-estoque-atual">Estoque atual (ajuste manual se necessário)</label>
+        <input type="number" id="input-estoque-atual" inputmode="numeric" min="0">
+      </div>
+      <div class="modal-acoes">
+        <button class="btn-secondary" id="btn-cancelar-produto" type="button">Cancelar</button>
+        <button class="btn-primary" id="btn-salvar-produto" type="button">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL ADICIONAR ESTOQUE -->
+  <div class="modal-overlay" id="modal-estoque">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <h3>Adicionar Estoque</h3>
+        <button class="btn-icon" id="btn-fechar-modal-estoque" type="button" aria-label="Fechar">✕</button>
+      </div>
+      <p class="modal-produto-nome" id="estoque-produto-nome"></p>
+      <div class="field">
+        <label for="input-add-qtd">Quantidade a adicionar</label>
+        <input type="number" id="input-add-qtd" inputmode="numeric" min="1" placeholder="0">
+      </div>
+      <div class="field">
+        <label for="input-add-custo">Preço de custo (deste lote)</label>
+        <div class="input-currency"><span class="prefix">R$</span><input type="text" id="input-add-custo" inputmode="decimal"></div>
+      </div>
+      <div class="modal-acoes">
+        <button class="btn-secondary" id="btn-cancelar-estoque" type="button">Cancelar</button>
+        <button class="btn-primary" id="btn-confirmar-estoque" type="button">Adicionar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+</div>
+
+<script>
+'use strict';
+
+var STORAGE_KEY = 'doceControleState_v1';
+var state = { produtos: [], vendas: [], totalInvestido: 0 };
+var abaAtual = 'estoque';
+var produtoEditandoId = null;
+var produtoAddEstoqueId = null;
+var filtroData = dataLocalStr();
+var mostrarTodas = false;
+var toastTimeout = null;
+
+/* ---------- Utilitários ---------- */
+
+function uid(){
+  return 'id_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,9);
+}
+
+function formatBRL(v){
+  if(typeof v !== 'number' || isNaN(v)) v = 0;
+  return v.toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+}
+
+function parseNumeroBR(v){
+  if(typeof v === 'number') return v;
+  if(v === null || v === undefined || v === '') return 0;
+  var s = v.toString().trim();
+  if(s.indexOf(',') !== -1){
+    s = s.replace(/\./g,'').replace(',', '.');
+  }
+  var n = parseFloat(s);
+  return isNaN(n) ? 0 : n;
+}
+
+function dataLocalStr(d){
+  d = d || new Date();
+  var ano = d.getFullYear();
+  var mes = String(d.getMonth()+1).padStart(2,'0');
+  var dia = String(d.getDate()).padStart(2,'0');
+  return ano + '-' + mes + '-' + dia;
+}
+
+function formatarDataBR(str){
+  var partes = str.split('-');
+  return partes[2] + '/' + partes[1] + '/' + partes[0];
+}
+
+function escapeHTML(str){
+  var d = document.createElement('div');
+  d.textContent = str == null ? '' : str;
+  return d.innerHTML;
+}
+
+function corDoNome(nome){
+  var hash = 0;
+  for(var i=0;i<nome.length;i++){ hash = nome.charCodeAt(i) + ((hash<<5)-hash); }
+  var hue = Math.abs(hash) % 360;
+  return 'hsl(' + hue + ', 58%, 87%)';
+}
+
+function detectarTipoPreco(cobrado, sugerido){
+  var diff = cobrado - sugerido;
+  if(Math.abs(diff) < 0.005) return 'padrao';
+  return diff < 0 ? 'promocao' : 'acima';
+}
+
+function toast(msg){
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(function(){ el.classList.remove('show'); }, 2800);
+}
+
+/* ---------- Persistência ---------- */
+
+function loadState(){
+  try{
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){ state = JSON.parse(raw); }
+  }catch(e){ console.error('Erro ao carregar dados', e); }
+  if(!state || typeof state !== 'object') state = {};
+  if(!Array.isArray(state.produtos)) state.produtos = [];
+  if(!Array.isArray(state.vendas)) state.vendas = [];
+  if(typeof state.totalInvestido !== 'number') state.totalInvestido = 0;
+}
+
+function saveState(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }catch(e){
+    toast('Não foi possível salvar. Armazenamento cheio?');
+  }
+  atualizarHeaderLucroHoje();
+}
+
+function atualizarHeaderLucroHoje(){
+  var hoje = dataLocalStr();
+  var total = 0;
+  for(var i=0;i<state.vendas.length;i++){
+    if(state.vendas[i].dataLocal === hoje) total += state.vendas[i].lucro;
+  }
+  var el = document.getElementById('header-lucro-hoje');
+  if(el) el.textContent = 'Lucro hoje: ' + formatBRL(total);
+}
+
+function renderTudo(){
+  renderEstoque();
+  renderVender();
+  renderResumo();
+}
+
+/* ---------- Navegação ---------- */
+
+function irPara(aba){
+  abaAtual = aba;
+  var paineis = document.querySelectorAll('.tab-panel');
+  for(var i=0;i<paineis.length;i++){ paineis[i].classList.remove('active'); }
+  document.getElementById('tab-' + aba).classList.add('active');
+
+  var botoes = document.querySelectorAll('.nav-btn');
+  for(var j=0;j<botoes.length;j++){
+    botoes[j].classList.toggle('active', botoes[j].dataset.tab === aba);
+  }
+
+  if(aba === 'estoque') renderEstoque();
+  if(aba === 'vender') renderVender();
+  if(aba === 'resumo') renderResumo();
+
+  document.querySelector('main.app-main').scrollTop = 0;
+}
+
+/* ---------- Modais genéricos ---------- */
+
+function abrirModal(id){ document.getElementById(id).classList.add('open'); }
+function fecharModal(id){ document.getElementById(id).classList.remove('open'); }
+
+/* ---------- ESTOQUE ---------- */
+
+function renderEstoque(){
+  var container = document.getElementById('lista-produtos');
+  if(state.produtos.length === 0){
+    container.innerHTML =
+      '<div class="empty-state">' +
+        '<div class="empty-emoji">🍬</div>' +
+        '<p>Nenhum doce cadastrado ainda.</p>' +
+        '<button class="btn-primary" type="button" onclick="abrirModalProduto()">+ Cadastrar primeiro doce</button>' +
+      '</div>';
+    return;
+  }
+  var html = '';
+  for(var i=0;i<state.produtos.length;i++){ html += produtoCardHTML(state.produtos[i]); }
+  container.innerHTML = html;
+}
+
+function produtoCardHTML(p){
+  var margem = p.precoVenda - p.precoCusto;
+  var margemPct = p.precoVenda > 0 ? (margem / p.precoVenda * 100) : 0;
+  var estoqueBaixo = p.estoque <= 5;
+  return (
+    '<div class="card">' +
+      '<div class="produto-top">' +
+        '<div class="avatar" style="background:' + corDoNome(p.nome) + '">' + escapeHTML(p.nome.charAt(0).toUpperCase()) + '</div>' +
+        '<div>' +
+          '<div class="produto-nome">' + escapeHTML(p.nome) + '</div>' +
+          '<div class="produto-estoque' + (estoqueBaixo ? ' baixo' : '') + '">' + p.estoque + ' un. em estoque' + (estoqueBaixo ? ' ⚠️' : '') + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="produto-precos">' +
+        '<span>Custo: <b>' + formatBRL(p.precoCusto) + '</b></span>' +
+        '<span>Venda: <b>' + formatBRL(p.precoVenda) + '</b></span>' +
+        '<span class="margem">Margem: ' + formatBRL(margem) + ' (' + margemPct.toFixed(0) + '%)</span>' +
+      '</div>' +
+      '<div class="produto-acoes">' +
+        '<button class="btn-chip" type="button" onclick="abrirModalEstoque(\'' + p.id + '\')">+ Estoque</button>' +
+        '<button class="btn-chip" type="button" onclick="abrirModalProduto(\'' + p.id + '\')">Editar</button>' +
+        '<button class="btn-chip danger" type="button" onclick="excluirProduto(\'' + p.id + '\')">Excluir</button>' +
+      '</div>' +
+    '</div>'
+  );
+}
+
+function abrirModalProduto(id){
+  produtoEditandoId = id || null;
+  var p = id ? state.produtos.find(function(x){return x.id===id;}) : null;
+
+  document.getElementById('modal-produto-titulo').textContent = p ? 'Editar Doce' : 'Novo Doce';
+  document.getElementById('input-nome').value = p ? p.nome : '';
+  document.getElementById('input-custo').value = p ? String(p.precoCusto).replace('.',',') : '';
+  document.getElementById('input-venda').value = p ? String(p.precoVenda).replace('.',',') : '';
+  document.getElementById('campo-estoque-inicial').style.display = p ? 'none' : 'block';
+  document.getElementById('campo-estoque-atual').style.display = p ? 'block' : 'none';
+  document.getElementById('input-estoque-inicial').value = '';
+  document.getElementById('input-estoque-atual').value = p ? p.estoque : '';
+
+  abrirModal('modal-produto');
+  setTimeout(function(){ document.getElementById('input-nome').focus(); }, 260);
+}
+
+function salvarProduto(){
+  var nome = document.getElementById('input-nome').value.trim();
+  var custo = parseNumeroBR(document.getElementById('input-custo').value);
+  var venda = parseNumeroBR(document.getElementById('input-venda').value);
+
+  if(!nome){ toast('Digite o nome do doce'); return; }
+  if(custo < 0 || venda < 0){ toast('Preços não podem ser negativos'); return; }
+
+  if(produtoEditandoId){
+    var p = state.produtos.find(function(x){return x.id===produtoEditandoId;});
+    if(p){
+      p.nome = nome; p.precoCusto = custo; p.precoVenda = venda;
+      var novoEstoque = parseInt(document.getElementById('input-estoque-atual').value, 10);
+      p.estoque = isNaN(novoEstoque) ? p.estoque : Math.max(0, novoEstoque);
+    }
+  } else {
+    var estoqueInicial = Math.max(0, parseInt(document.getElementById('input-estoque-inicial').value, 10) || 0);
+    state.produtos.push({ id: uid(), nome: nome, precoCusto: custo, precoVenda: venda, estoque: estoqueInicial });
+    if(estoqueInicial > 0) state.totalInvestido += estoqueInicial * custo;
+  }
+
+  saveState();
+  fecharModal('modal-produto');
+  renderTudo();
+  toast('Doce salvo com sucesso! 🍬');
+}
+
+function excluirProduto(id){
+  var p = state.produtos.find(function(x){return x.id===id;});
+  if(!p) return;
+  if(!confirm('Excluir "' + p.nome + '"? As vendas já registradas não serão afetadas.')) return;
+  state.produtos = state.produtos.filter(function(x){return x.id!==id;});
+  saveState();
+  renderTudo();
+  toast('Doce excluído');
+}
+
+function abrirModalEstoque(id){
+  produtoAddEstoqueId = id;
+  var p = state.produtos.find(function(x){return x.id===id;});
+  if(!p) return;
+  document.getElementById('estoque-produto-nome').textContent = p.nome;
+  document.getElementById('input-add-qtd').value = '';
+  document.getElementById('input-add-custo').value = String(p.precoCusto).replace('.',',');
+  abrirModal('modal-estoque');
+  setTimeout(function(){ document.getElementById('input-add-qtd').focus(); }, 260);
+}
+
+function confirmarAddEstoque(){
+  var p = state.produtos.find(function(x){return x.id===produtoAddEstoqueId;});
+  if(!p) return;
+  var qtd = Math.max(0, parseInt(document.getElementById('input-add-qtd').value, 10) || 0);
+  var custo = parseNumeroBR(document.getElementById('input-add-custo').value);
+  if(qtd <= 0){ toast('Informe uma quantidade válida'); return; }
+
+  p.estoque += qtd;
+  p.precoCusto = custo;
+  state.totalInvestido += qtd * custo;
+
+  saveState();
+  fecharModal('modal-estoque');
+  renderTudo();
+  toast(qtd + ' unidades adicionadas ao estoque!');
+}
+
+/* ---------- VENDER ---------- */
+
+function produtoSelecionadoVenda(){
+  var id = document.getElementById('select-produto-venda').value;
+  return state.produtos.find(function(p){return p.id===id;}) || null;
+}
+
+function renderVender(){
+  var vazio = document.getElementById('vender-vazio');
+  var form = document.getElementById('vender-form');
+
+  if(state.produtos.length === 0){
+    document.getElementById('vender-vazio-texto').textContent = 'Cadastre seus doces antes de registrar vendas.';
+    vazio.style.display = 'block';
+    form.style.display = 'none';
+    return;
+  }
+  var temEstoque = state.produtos.some(function(p){return p.estoque>0;});
+  if(!temEstoque){
+    document.getElementById('vender-vazio-texto').textContent = 'Todos os doces estão sem estoque. Adicione mais estoque para continuar vendendo.';
+    vazio.style.display = 'block';
+    form.style.display = 'none';
+    return;
+  }
+  vazio.style.display = 'none';
+  form.style.display = 'block';
+
+  var select = document.getElementById('select-produto-venda');
+  var valorAnterior = select.value;
+
+  var html = '';
+  for(var i=0;i<state.produtos.length;i++){
+    var p = state.produtos[i];
+    html += '<option value="' + p.id + '"' + (p.estoque<=0?' disabled':'') + '>' +
+      escapeHTML(p.nome) + (p.estoque<=0 ? ' (sem estoque)' : ' — ' + p.estoque + ' un.') +
+    '</option>';
+  }
+  select.innerHTML = html;
+
+  var produtoAnterior = valorAnterior ? state.produtos.find(function(p){return p.id===valorAnterior;}) : null;
+  if(produtoAnterior && produtoAnterior.estoque > 0){
+    select.value = valorAnterior;
+  } else {
+    var primeiroDisponivel = state.produtos.find(function(p){return p.estoque>0;});
+    select.value = primeiroDisponivel ? primeiroDisponivel.id : '';
+  }
+
+  atualizarInfoProdutoSelecionado();
+}
+
+function atualizarInfoProdutoSelecionado(){
+  var p = produtoSelecionadoVenda();
+  var infoEl = document.getElementById('venda-produto-info');
+  var qtdInput = document.getElementById('input-qtd-venda');
+
+  if(!p){
+    infoEl.style.display = 'none';
+    return;
+  }
+  infoEl.style.display = 'flex';
+  infoEl.innerHTML =
+    '<div class="avatar" style="background:' + corDoNome(p.nome) + '">' + escapeHTML(p.nome.charAt(0).toUpperCase()) + '</div>' +
+    '<div>' +
+      '<div class="produto-nome">' + escapeHTML(p.nome) + '</div>' +
+      '<div class="produto-estoque">Estoque: ' + p.estoque + ' un. · Custo ' + formatBRL(p.precoCusto) + ' · Venda ' + formatBRL(p.precoVenda) + '</div>' +
+    '</div>';
+
+  qtdInput.max = p.estoque;
+  var atual = parseInt(qtdInput.value, 10);
+  if(!atual || atual < 1 || atual > p.estoque){
+    qtdInput.value = Math.min(1, p.estoque) || 1;
+  }
+
+  atualizarPreviewVenda();
+}
+
+function ajustarQtd(delta){
+  var p = produtoSelecionadoVenda();
+  if(!p) return;
+  var input = document.getElementById('input-qtd-venda');
+  var val = (parseInt(input.value, 10) || 0) + delta;
+  val = Math.max(1, Math.min(val, p.estoque));
+  input.value = val;
+  atualizarPreviewVenda();
+}
+
+function atualizarPreviewVenda(){
+  var p = produtoSelecionadoVenda();
+  var valorInput = document.getElementById('input-valor-cobrado');
+  if(!p) return;
+
+  var qtd = Math.max(1, parseInt(document.getElementById('input-qtd-venda').value, 10) || 1);
+  var sugestao = p.precoVenda * qtd;
+  document.getElementById('valor-sugerido-display').textContent = formatBRL(sugestao);
+
+  if(valorInput.dataset.userEdited !== 'true' || valorInput.value === ''){
+    valorInput.value = sugestao.toFixed(2).replace('.', ',');
+  }
+
+  recalcularBadgeELucro();
+}
+
+function recalcularBadgeELucro(){
+  var p = produtoSelecionadoVenda();
+  if(!p) return;
+  var qtd = Math.max(1, parseInt(document.getElementById('input-qtd-venda').value, 10) || 1);
+  var sugestao = p.precoVenda * qtd;
+  var cobrado = parseNumeroBR(document.getElementById('input-valor-cobrado').value);
+  var custoTotal = p.precoCusto * qtd;
+  var lucro = cobrado - custoTotal;
+  var tipo = detectarTipoPreco(cobrado, sugestao);
+  var diff = Math.abs(cobrado - sugestao);
+
+  var badgeEl = document.getElementById('venda-badge');
+  if(tipo === 'padrao'){
+    badgeEl.className = 'badge badge-padrao';
+    badgeEl.textContent = '✓ Preço da tabela';
+  } else if(tipo === 'promocao'){
+    badgeEl.className = 'badge badge-promo';
+    badgeEl.textContent = '🏷️ Promoção — ' + formatBRL(diff) + ' abaixo da tabela';
+  } else {
+    badgeEl.className = 'badge badge-acima';
+    badgeEl.textContent = '⬆️ ' + formatBRL(diff) + ' acima da tabela';
+  }
+
+  var lucroEl = document.getElementById('venda-lucro-preview');
+  lucroEl.textContent = formatBRL(lucro);
+  lucroEl.className = 'lucro-valor ' + (lucro < 0 ? 'negativo' : 'positivo');
+}
+
+function confirmarVenda(){
+  var p = produtoSelecionadoVenda();
+  if(!p){ toast('Selecione um doce'); return; }
+
+  var qtd = Math.max(0, parseInt(document.getElementById('input-qtd-venda').value, 10) || 0);
+  if(qtd < 1){ toast('Informe uma quantidade válida'); return; }
+  if(qtd > p.estoque){ toast('Quantidade maior que o estoque disponível (' + p.estoque + ')'); return; }
+
+  var cobrado = parseNumeroBR(document.getElementById('input-valor-cobrado').value);
+  if(cobrado < 0){ toast('Valor cobrado inválido'); return; }
+
+  var sugerido = p.precoVenda * qtd;
+  var custoTotal = p.precoCusto * qtd;
+  var lucro = cobrado - custoTotal;
+  var tipo = detectarTipoPreco(cobrado, sugerido);
+  var agora = new Date();
+
+  var venda = {
+    id: uid(),
+    produtoId: p.id,
+    produtoNome: p.nome,
+    quantidade: qtd,
+    precoVendaRegistrado: p.precoVenda,
+    precoCustoRegistrado: p.precoCusto,
+    valorSugerido: sugerido,
+    valorCobrado: cobrado,
+    custoTotal: custoTotal,
+    lucro: lucro,
+    tipoPreco: tipo,
+    timestamp: agora.toISOString(),
+    dataLocal: dataLocalStr(agora)
+  };
+
+  p.estoque -= qtd;
+  state.vendas.unshift(venda);
+  saveState();
+
+  document.getElementById('input-valor-cobrado').dataset.userEdited = 'false';
+  renderTudo();
+
+  toast((lucro < 0 ? '⚠️ Venda registrada. Prejuízo: ' : '✅ Venda registrada! Lucro: ') + formatBRL(lucro));
+}
+
+/* ---------- RESUMO ---------- */
+
+function agregarVendas(lista){
+  var acc = { count:0, faturamento:0, custo:0, lucro:0 };
+  for(var i=0;i<lista.length;i++){
+    acc.count++;
+    acc.faturamento += lista[i].valorCobrado;
+    acc.custo += lista[i].custoTotal;
+    acc.lucro += lista[i].lucro;
+  }
+  return acc;
+}
+
+function renderResumo(){
+  var dateInput = document.getElementById('input-data-filtro');
+  dateInput.value = filtroData;
+
+  var vendasDoDia = state.vendas.filter(function(v){return v.dataLocal===filtroData;});
+  var totalDia = agregarVendas(vendasDoDia);
+
+  document.getElementById('resumo-label-dia').textContent = (filtroData === dataLocalStr()) ? 'Hoje' : formatarDataBR(filtroData);
+  document.getElementById('stat-vendas-dia').textContent = totalDia.count;
+  document.getElementById('stat-faturamento-dia').textContent = formatBRL(totalDia.faturamento);
+  document.getElementById('stat-custo-dia').textContent = formatBRL(totalDia.custo);
+
+  var lucroDiaEl = document.getElementById('stat-lucro-dia');
+  lucroDiaEl.textContent = formatBRL(totalDia.lucro);
+  lucroDiaEl.classList.toggle('valor-negativo', totalDia.lucro < 0);
+
+  var totalGeral = agregarVendas(state.vendas);
+  var valorEstoqueAtual = state.produtos.reduce(function(s,p){return s + p.estoque*p.precoCusto;}, 0);
+
+  document.getElementById('stat-investido').textContent = formatBRL(state.totalInvestido);
+  document.getElementById('stat-estoque-valor').textContent = formatBRL(valorEstoqueAtual);
+  document.getElementById('stat-faturamento-total').textContent = formatBRL(totalGeral.faturamento);
+
+  var lucroTotalEl = document.getElementById('stat-lucro-total');
+  lucroTotalEl.textContent = formatBRL(totalGeral.lucro);
+  lucroTotalEl.classList.toggle('valor-negativo', totalGeral.lucro < 0);
+
+  var lista = mostrarTodas ? state.vendas : vendasDoDia;
+  var listaEl = document.getElementById('lista-vendas');
+  if(lista.length === 0){
+    listaEl.innerHTML = '<div class="empty-state"><div class="empty-emoji">🧾</div><p>Nenhuma venda registrada' + (mostrarTodas ? '' : ' nesta data') + '.</p></div>';
+  } else {
+    var html = '';
+    for(var i=0;i<lista.length;i++){ html += vendaTicketHTML(lista[i]); }
+    listaEl.innerHTML = html;
+  }
+}
+
+function vendaTicketHTML(v){
+  var hora = new Date(v.timestamp).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+  var dataLabel = mostrarTodas ? (formatarDataBR(v.dataLocal) + ' · ') : '';
+  var badge = '';
+  if(v.tipoPreco === 'promocao') badge = '<span class="badge badge-promo">🏷️ Promoção</span>';
+  else if(v.tipoPreco === 'acima') badge = '<span class="badge badge-acima">⬆️ Acima</span>';
+
+  return (
+    '<div class="ticket">' +
+      '<div class="ticket-main">' +
+        '<div class="ticket-row-top">' +
+          '<span class="ticket-produto">' + escapeHTML(v.produtoNome) + '</span>' +
+          '<span class="ticket-time">' + dataLabel + hora + '</span>' +
+        '</div>' +
+        '<div class="ticket-row-detail">' + v.quantidade + ' un. · cobrado ' + formatBRL(v.valorCobrado) + '</div>' +
+      '</div>' +
+      '<div class="ticket-perf"></div>' +
+      '<div class="ticket-footer">' +
+        '<span class="lucro-valor ' + (v.lucro<0?'negativo':'positivo') + '">' + (v.lucro<0?'':'+') + formatBRL(v.lucro) + '</span>' +
+        badge +
+        '<button class="btn-icon" type="button" onclick="excluirVenda(\'' + v.id + '\')" aria-label="Excluir venda">🗑</button>' +
+      '</div>' +
+    '</div>'
+  );
+}
+
+function excluirVenda(id){
+  var v = state.vendas.find(function(x){return x.id===id;});
+  if(!v) return;
+  if(!confirm('Excluir esta venda? O estoque será restaurado.')) return;
+  var p = state.produtos.find(function(x){return x.id===v.produtoId;});
+  if(p) p.estoque += v.quantidade;
+  state.vendas = state.vendas.filter(function(x){return x.id!==id;});
+  saveState();
+  renderTudo();
+  toast('Venda excluída e estoque restaurado');
+}
+
+/* ---------- Backup ---------- */
+
+function exportarBackup(){
+  var dataStr = JSON.stringify(state, null, 2);
+  var blob = new Blob([dataStr], { type:'application/json' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'doce-controle-backup-' + dataLocalStr() + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('Backup exportado!');
+}
+
+function importarBackup(file){
+  var reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      var novo = JSON.parse(e.target.result);
+      if(!novo || !Array.isArray(novo.produtos) || !Array.isArray(novo.vendas)){
+        toast('Arquivo inválido');
+        return;
+      }
+      if(!confirm('Importar este backup vai substituir todos os dados atuais. Continuar?')) return;
+      state = {
+        produtos: novo.produtos,
+        vendas: novo.vendas,
+        totalInvestido: typeof novo.totalInvestido === 'number' ? novo.totalInvestido : 0
+      };
+      saveState();
+      renderTudo();
+      toast('Backup importado com sucesso!');
+    }catch(err){
+      toast('Erro ao ler o arquivo');
+    }
+  };
+  reader.readAsText(file);
+}
+
+/* ---------- Inicialização e eventos ---------- */
+
+function attachStaticEvents(){
+  var navBtns = document.querySelectorAll('.nav-btn');
+  for(var i=0;i<navBtns.length;i++){
+    navBtns[i].addEventListener('click', function(){ irPara(this.dataset.tab); });
+  }
+
+  document.getElementById('btn-novo-produto').addEventListener('click', function(){ abrirModalProduto(); });
+  document.getElementById('btn-salvar-produto').addEventListener('click', salvarProduto);
+  document.getElementById('btn-fechar-modal-produto').addEventListener('click', function(){ fecharModal('modal-produto'); });
+  document.getElementById('btn-cancelar-produto').addEventListener('click', function(){ fecharModal('modal-produto'); });
+
+  document.getElementById('btn-confirmar-estoque').addEventListener('click', confirmarAddEstoque);
+  document.getElementById('btn-fechar-modal-estoque').addEventListener('click', function(){ fecharModal('modal-estoque'); });
+  document.getElementById('btn-cancelar-estoque').addEventListener('click', function(){ fecharModal('modal-estoque'); });
+
+  var overlays = document.querySelectorAll('.modal-overlay');
+  for(var j=0;j<overlays.length;j++){
+    overlays[j].addEventListener('click', function(e){
+      if(e.target === this) this.classList.remove('open');
+    });
+  }
+
+  document.getElementById('select-produto-venda').addEventListener('change', function(){
+    document.getElementById('input-valor-cobrado').dataset.userEdited = 'false';
+    atualizarInfoProdutoSelecionado();
+  });
+  document.getElementById('btn-qtd-menos').addEventListener('click', function(){ ajustarQtd(-1); });
+  document.getElementById('btn-qtd-mais').addEventListener('click', function(){ ajustarQtd(1); });
+  document.getElementById('input-qtd-venda').addEventListener('input', atualizarPreviewVenda);
+  document.getElementById('input-qtd-venda').addEventListener('blur', function(){
+    var p = produtoSelecionadoVenda();
+    if(!p) return;
+    var v = parseInt(this.value, 10);
+    if(isNaN(v) || v < 1) v = 1;
+    v = Math.min(v, p.estoque);
+    this.value = v;
+    atualizarPreviewVenda();
+  });
+  document.getElementById('input-valor-cobrado').addEventListener('input', function(){
+    this.dataset.userEdited = 'true';
+    recalcularBadgeELucro();
+  });
+  document.getElementById('btn-confirmar-venda').addEventListener('click', confirmarVenda);
+
+  document.getElementById('input-data-filtro').addEventListener('change', function(){
+    filtroData = this.value || dataLocalStr();
+    renderResumo();
+  });
+  document.getElementById('btn-hoje').addEventListener('click', function(){
+    filtroData = dataLocalStr();
+    renderResumo();
+  });
+  document.getElementById('check-mostrar-todas').addEventListener('change', function(){
+    mostrarTodas = this.checked;
+    renderResumo();
+  });
+
+  document.getElementById('btn-toggle-backup').addEventListener('click', function(){
+    var painel = document.getElementById('painel-backup');
+    painel.style.display = (painel.style.display === 'none' || !painel.style.display) ? 'block' : 'none';
+  });
+  document.getElementById('btn-exportar').addEventListener('click', exportarBackup);
+  document.getElementById('input-importar').addEventListener('change', function(){
+    if(this.files && this.files[0]) importarBackup(this.files[0]);
+    this.value = '';
+  });
+}
+
+function init(){
+  loadState();
+  attachStaticEvents();
+  atualizarHeaderLucroHoje();
+  irPara('estoque');
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
